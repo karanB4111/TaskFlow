@@ -1,0 +1,27 @@
+{
+  "name": "taskflow",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/karanB4111/TaskFlow#readme",
+  "bugs": {
+    "url": "https://github.com/karanB4111/TaskFlow/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/karanB4111/TaskFlow.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "bullmq": "^5.79.1",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "ioredis": "^5.11.1",
+    "mongoose": "^9.7.1"
+  }
+}

@@ -1,8 +1,9 @@
 const { Queue } = require("bullmq");
-const connection = require("../config/redis");
+const {redisConnection} = require("../../config/redis");
+const registerQueueLogging = require("./queueLogging");
 
 const imageQueue = new Queue("image", {
-    connection,
+    connection : redisConnection,
     defaultJobOptions: {
         attempts: 2,
         backoff: {
@@ -13,5 +14,7 @@ const imageQueue = new Queue("image", {
         removeOnFail: false,
     },
 });
+
+registerQueueLogging(imageQueue);
 
 module.exports = imageQueue;

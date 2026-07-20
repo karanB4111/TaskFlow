@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow Jobs</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Arial, sans-serif;
+      color: #1f2937;
+      background: #f7f8fb;
+    }
+
+    body {
+      margin: 0;
+      padding: 32px;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      font-size: 28px;
+    }
+
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 18px;
+      padding: 16px;
+      background: #ffffff;
+      border: 1px solid #d7dce5;
+      border-radius: 8px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    select,
+    input,
+    button,
+    a.button {
+      min-height: 38px;
+      border-radius: 6px;
+      border: 1px solid #c9d0dc;
+      font: inherit;
+    }
+
+    select,
+    input {
+      padding: 0 10px;
+      background: #ffffff;
+    }
+
+    button,
+    a.button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      color: #ffffff;
+      background: #2563eb;
+      border-color: #2563eb;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    a.secondary {
+      color: #1f2937;
+      background: #ffffff;
+      border-color: #c9d0dc;
+    }
+
+    .summary {
+      margin: 0 0 12px;
+      color: #4b5563;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+      border: 1px solid #d7dce5;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      background: #eef2f7;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    code {
+      font-family: Consolas, monospace;
+      font-size: 13px;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #e0f2fe;
+      color: #075985;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .empty {
+      padding: 28px;
+      text-align: center;
+      background: #ffffff;
+      border: 1px solid #d7dce5;
+      border-radius: 8px;
+    }
+
+    .pagination {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
+
+    .page-count {
+      color: #4b5563;
+      font-size: 14px;
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 18px;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Jobs</h1>
+
+    <form method="GET" action="/api/jobs">
+      <label>
+        Status
+        <select name="status">
+          <option value="">All statuses</option>
+          <% validJobStatuses.forEach((statusOption) => { %>
+            <option value="<%= statusOption %>" <%= filters.status === statusOption ? 'selected' : '' %>><%= statusOption %></option>
+          <% }) %>
+        </select>
+      </label>
+
+      <label>
+        Type
+        <select name="type">
+          <option value="">All types</option>
+          <% validJobTypes.forEach((typeOption) => { %>
+            <option value="<%= typeOption %>" <%= filters.type === typeOption ? 'selected' : '' %>><%= typeOption %></option>
+          <% }) %>
+        </select>
+      </label>
+
+      <label>
+        Limit
+        <input type="number" name="limit" min="1" max="100" value="<%= pagination.limit %>">
+      </label>
+
+      <button type="submit">Apply</button>
+      <a class="button secondary" href="/api/jobs">Reset</a>
+    </form>
+
+    <p class="summary">
+      Showing <%= jobs.length %> of <%= pagination.total %> matching jobs.
+    </p>
+
+    <% if (jobs.length === 0) { %>
+      <div class="empty">No jobs found.</div>
+    <% } else { %>
+      <table>
+        <thead>
+          <tr>
+            <th>Job ID</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Attempts</th>
+            <th>Created</th>
+            <th>Completed</th>
+            <th>Error</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% jobs.forEach((job) => { %>
+            <tr>
+              <td><code><%= job.jobId %></code></td>
+              <td><%= job.type %></td>
+              <td><span class="status"><%= job.status %></span></td>
+              <td><%= job.priority %></td>
+              <td><%= job.attempts %></td>
+              <td><%= job.createdAt ? job.createdAt.toLocaleString() : '-' %></td>
+              <td><%= job.completedAt ? job.completedAt.toLocaleString() : '-' %></td>
+              <td><%= job.error || '-' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+
+    <div class="pagination">
+      <% const queryBase = new URLSearchParams(); %>
+      <% if (filters.status) queryBase.set('status', filters.status); %>
+      <% if (filters.type) queryBase.set('type', filters.type); %>
+      <% queryBase.set('limit', pagination.limit); %>
+
+      <% if (pagination.hasPrevPage) { %>
+        <% const prevQuery = new URLSearchParams(queryBase); prevQuery.set('page', pagination.page - 1); %>
+        <a class="button secondary" href="/api/jobs?<%= prevQuery.toString() %>">Previous</a>
+      <% } %>
+
+      <span class="page-count">Page <%= pagination.page %> of <%= pagination.totalPages %></span>
+
+      <% if (pagination.hasNextPage) { %>
+        <% const nextQuery = new URLSearchParams(queryBase); nextQuery.set('page', pagination.page + 1); %>
+        <a class="button secondary" href="/api/jobs?<%= nextQuery.toString() %>">Next</a>
+      <% } %>
+    </div>
+  </main>
+</body>
+</html>

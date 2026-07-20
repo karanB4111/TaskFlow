@@ -1,28 +1,26 @@
 const Redis = require("ioredis");
+const logger = require("../utils/logger");
 
-const redisUrl =
-    process.env.REDIS_URL ||
-    process.env.REDIS_URI ||
-    "redis://127.0.0.1:6379";
-
-const redis = new Redis(redisUrl, {
+const redisConnection = {
+    host : process.env.REDIS_HOST || "127.0.0.1",
+    port: parseInt(process.env.REDIS_PORT || "6379"),
     maxRetriesPerRequest: null,
-});
+}
 
-redis.on("ready", () => {
-    console.log("Redis is ready");
-});
+const redis = new Redis(redisConnection);
 
-redis.on("error", (error) => {
-    console.error("Redis connection error:", error.message);
-});
+redis.on("ready", () => logger.info("Redis is ready", {
+    host: redisConnection.host,
+    port: redisConnection.port,
+}) );
 
-redis.on("reconnecting", (delay) => {
-    console.log(`Redis reconnecting in ${delay}ms`);
-});
+redis.on("error", (error) => logger.error("Redis connection error", { error }));
 
-redis.on("end", () => {
-    console.log("Redis connection ended");
-});
+redis.on("reconnecting", (delay) => logger.warn("Redis reconnecting", { delayMs: delay }));
 
-module.exports = redis;
+redis.on("end", () => logger.warn("Redis connection ended"));
+
+module.exports = {
+    redis,
+    redisConnection
+};

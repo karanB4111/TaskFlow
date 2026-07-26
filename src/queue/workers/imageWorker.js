@@ -34,13 +34,18 @@ async function processImageJob(job) {
   { upsert: true, returnDocument: 'after'}
   );
 
+  await job.updateProgress(10);
   await sleep(1500);
+  await job.updateProgress(90);
 
-  return{
+  const result = {
     messageID : `mock-image-${job_Id}`,
     imageUrl,
     sentAt : new Date().toISOString(),
   };
+
+  await job.updateProgress(100);
+  return result;
  
 }
 

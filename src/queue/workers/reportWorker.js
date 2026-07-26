@@ -34,13 +34,18 @@ async function processReportJob(job) {
   { upsert: true, returnDocument: 'after' }
   );
 
+  await job.updateProgress(10);
   await sleep(1500);
+  await job.updateProgress(90);
 
-  return{
+  const result = {
     messageID : `mock-report-${job_Id}`,
     reportData,
     sentAt : new Date().toISOString(),
   };
+
+  await job.updateProgress(100);
+  return result;
  
 }
 
